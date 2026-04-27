@@ -1,0 +1,15 @@
+{
+  "name": "com.longbombus.uniscope",
+  "displayName": "UniScope",
+  "version": "0.0.1",
+  "description": "IoC without manual registration. For fast bootstrapping.",
+  "keywords": [
+    "IoC",
+    "InversionOfControl",
+    "DI",
+    "DependencyInjection"
+  ],
+  "license": "MIT",
+  "category": "Utilities",
+  "dependencies": {}
+}
