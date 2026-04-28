@@ -68,5 +68,11 @@ namespace UniScope
 			value = null;
 			return false;
 		}
+
+		public void Clear()
+		{
+			uniqueRegistry.Clear();
+			multiRegistry?.Clear();
+		}
 	}
 }
