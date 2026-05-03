@@ -7,11 +7,10 @@ namespace UniScope
 	public class AppScope : ScriptableObject, IScope
 	{
 		public IScope Parent => null;
-		public Registry Registry { get; } =  new Registry();
+		public Registry Registry { get; } = new Registry();
 
 		[Header("Register")]
-		[SerializeField] private Inheritance registrationFlags;
-		[SerializeField] private ScriptableObject[] assets;
+		[SerializeField] private RegistrationArgs<ScriptableObject>[] assets;
 		// TODO: make editor that can add whole Folders of assets, see UnityEditor.DefaultAsset
 
 		public static AppScope Instance { get; private set; }
@@ -25,7 +24,7 @@ namespace UniScope
 		private void RegisterAll()
 		{
 			foreach (var asset in assets)
-				this.Register(asset, registrationFlags);
+				this.Register(asset.Instance, asset.Flags);
 		}
 
 #if UNITY_EDITOR
