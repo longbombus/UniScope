@@ -12,6 +12,8 @@ namespace UniScope
 		private IScope scope;
 		private IReadOnlyCollection<IResolver> resolvers;
 
+		public int EntriesCount => entries.Count;
+
 		public void Dispose()
 			=> Clear();
 
