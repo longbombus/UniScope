@@ -21,18 +21,21 @@ namespace UniScope
 
 		public static void Inject(this IScope scope, object target)
 		{
-			var targetType = target.GetType();
+			const BindingFlags memberFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 
-			foreach (var field in targetType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+			for (var type = target.GetType(); !type.IsRootType(); type = type.BaseType)
 			{
-				var inject = field.GetCustomAttribute<InjectAttribute>();
-				if (inject == null)
-					continue;
+				foreach (var field in type.GetFields(memberFlags))
+				{
+					var inject = field.GetCustomAttribute<InjectAttribute>();
+					if (inject == null)
+						continue;
 
-				if (scope.TryResolve(field.FieldType, out object value))
-					field.SetValue(target, value);
-				else if (inject.IsRequired)
-					throw new CannotResolveException(scope, field.FieldType, field.Name);
+					if (scope.TryResolve(field.FieldType, out object value))
+						field.SetValue(target, value);
+					else if (inject.IsRequired)
+						throw new CannotResolveException(scope, field.FieldType, field.Name);
+				}
 			}
 		}
 	}

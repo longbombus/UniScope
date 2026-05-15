@@ -25,7 +25,6 @@ namespace UniScope
 
 	public static class ScopeUtility
 	{
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Register<T>(this IScope scope, T instance)
 			where T : class
@@ -35,13 +34,20 @@ namespace UniScope
 		public static void Register<T>(this IScope scope, T instance, Inheritance flags)
 			where T : class
 		{
+			if (instance.GetType() != typeof(T))
+				scope.Registry.Register(typeof(T), instance);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void Register(this IScope scope, object instance, Inheritance flags)
+		{
 			var instanceType = instance.GetType();
 
 			if ((flags & Inheritance.Self) != 0)
 				scope.Registry.Register(instanceType, instance);
 
 			if ((flags & Inheritance.Bases) != 0)
-				for (var type = instanceType.BaseType; type != null && type != typeof(object) && type != typeof(ScopedBehaviour) && type != typeof(MonoBehaviour); type = type.BaseType)
+				for (var type = instanceType.BaseType; !type.IsRootType(); type = type.BaseType)
 					scope.Registry.Register(type, instance);
 
 			if ((flags & Inheritance.Interfaces) != 0)
