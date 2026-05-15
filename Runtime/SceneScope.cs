@@ -11,6 +11,11 @@ namespace UniScope
 
 		private static readonly Dictionary<Scene, SceneScope> Instances = new();
 
+		private SceneScope()
+		{
+			Registry.Register<SceneScope, IScope>(this);
+		}
+
 		public static SceneScope GetInstance(in Scene scene)
 		{
 			if (!Instances.TryGetValue(scene, out var instance))

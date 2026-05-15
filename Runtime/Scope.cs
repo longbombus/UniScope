@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -18,11 +19,18 @@ namespace UniScope
 		{
 			Parent = parent;
 			Registry = new Registry();
+			Registry.Register<Scope, IScope>(this);
 		}
 	}
 
 	public static class ScopeUtility
 	{
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void Register<T>(this IScope scope, T instance)
+			where T : class
+			=> scope.Registry.Register<T>(instance);
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Register<T>(this IScope scope, T instance, Inheritance flags)
 			where T : class
@@ -42,18 +50,6 @@ namespace UniScope
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static bool TryGet<T>(this IScope scope, out T instance)
-			where T : class
-			=> scope.Registry.TryGet(out instance);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static T Get<T>(this IScope scope)
-			where T : class
-			=> scope.Registry.TryGet(out T instance)
-				? instance
-				: throw new CannotResolveException(scope, typeof(T));
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static IScope ResolveScope(this Component component)
 			=> (IScope)component.GetComponentInParent<GameObjectScope>()
 			?? SceneScope.GetInstance(component.gameObject.scene);
@@ -69,13 +65,47 @@ namespace UniScope
 			};
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static bool TryGet<T>(this object context, out T instance)
-			where T : class
-			=> ResolveScope(context).TryGet(out instance);
+		public static bool TryResolve(this object context, Type type, out object instance)
+			=> ResolveScope(context).TryResolve(type, out instance);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static T Get<T>(this object context)
+		public static bool TryResolve(this IScope scope, Type type, out object instance)
+		{
+			for (var s = scope; s != null; s = s.Parent)
+				if (s.Registry.TryResolve(type, out instance))
+					return true;
+
+			instance = null;
+			return false;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryResolve<T>(this object context, out T instance)
 			where T : class
-			=> ResolveScope(context).Get<T>();
+			=> ResolveScope(context).TryResolve(out instance);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryResolve<T>(this IScope scope, out T instance)
+			where T : class
+			=> (instance = scope.TryResolve(typeof(T), out var obj) ? obj as T : null) != null;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static T Resolve<T>(this object context)
+			where T : class
+			=> ResolveScope(context).Resolve<T>();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static T Resolve<T>(this IScope scope)
+			where T : class
+			=> scope.TryResolve(out T instance)
+				? instance
+				: throw new CannotResolveException(scope, typeof(T));
+
+		public static IScope GetRoot(this IScope scope)
+		{
+			while (scope.Parent != null)
+				scope = scope.Parent;
+			return scope;
+		}
 	}
 }

@@ -11,6 +11,7 @@ namespace UniScope
 		private void Awake()
 		{
 			Parent = this.ResolveScope();
+			Registry.Register<GameObjectScope, IScope>(this);
 		}
 	}
 }
