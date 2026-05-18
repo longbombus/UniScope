@@ -1,11 +1,12 @@
 using System.Linq;
 using TypeDropdown;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace UniScope
 {
 	[CreateAssetMenu(fileName = "AppScope", menuName = "Scopes/AppScope")]
-	public class AppScope : ScriptableObject, IScope
+	public partial class AppScope : ScriptableObject, IScope
 	{
 		public IScope Parent => null;
 		public Registry Registry { get; } = new Registry();
@@ -26,12 +27,21 @@ namespace UniScope
 			Instance = this;
 		}
 
+		[OnCodeInitializing]
+		private static void Initialize()
+		{
+			if (Instance)
+				Instance.RegisterAll();
+		}
+
+		[ContextMenu(nameof(RegisterAll))]
 		private void RegisterAll()
 		{
+			Registry.Clear();
 			Registry.Register<AppScope, IScope>(this);
 
 			foreach (var asset in assets)
-				this.Register(asset.Instance, asset.Flags);
+				this.Register((object)asset.Instance, asset.Flags);
 
 			foreach (var resolver in resolvers)
 				Registry.Register(typeof(IResolver), resolver);
