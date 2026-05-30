@@ -27,6 +27,7 @@ namespace UniScope
 			Instance = this;
 		}
 
+		[OnEnteringPlayMode]
 		[OnCodeInitializing]
 		private static void Initialize()
 		{
