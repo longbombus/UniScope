@@ -36,6 +36,8 @@ namespace UniScope
 		{
 			if (instance.GetType() != typeof(T))
 				scope.Registry.Register(typeof(T), instance);
+
+			Register(scope, (object)instance, flags);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

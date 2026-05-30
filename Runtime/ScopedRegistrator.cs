@@ -13,7 +13,7 @@ namespace UniScope
 			Scope = this.ResolveScope();
 
 			foreach (var reg in registrations)
-				Scope.Register(reg.Instance, reg.Flags);
+				Scope.Register((object)reg.Instance, reg.Flags);
 		}
 	}
 }
