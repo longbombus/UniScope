@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace UniScope
 {
@@ -16,6 +17,12 @@ namespace UniScope
 
 		public void Dispose()
 			=> Clear();
+
+		private bool IsAllowedToResolveUnregistered(Type type)
+			=> entries.TryGetValue(type, out var entry) && entry == null;
+
+		public void Register(Type type)
+			=> entries.TryAdd(type, null);
 
 		public void Register<T>(T instance)
 			where T : class
@@ -42,7 +49,7 @@ namespace UniScope
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void Register(Type type, object instance, IResolver resolver)
 		{
-			if (entries.TryGetValue(type, out var oldEntry))
+			if (entries.TryGetValue(type, out var oldEntry) && oldEntry != null)
 				oldEntry.Add(instance);
 			else
 				entries.Add(type, new Entry(type, instance, resolver));
@@ -79,7 +86,13 @@ namespace UniScope
 		private bool TryResolveRegistered(Type type, out object value)
 		{
 			if (entries.TryGetValue(type, out var entry))
-				return entry.TryGetInstance(out value);
+			{
+				if (entry != null)
+					return entry.TryGetInstance(out value);
+
+				value = null;
+				return false;
+			}
 
 			if (type.IsGenericType)
 			{
@@ -97,7 +110,7 @@ namespace UniScope
 
 		private bool TryResolveUnregistered(Type type, out object value, out IResolver usedResolver)
 		{
-			if ((scope != null || TryResolve(out scope)) && (resolvers != null || scope.GetRoot().Registry.TryResolveRegistered(out resolvers)))
+			if (IsAllowedToResolveUnregistered(type) && (scope != null || TryResolve(out scope)) && (resolvers != null || scope.GetRoot().Registry.TryResolveRegistered(out resolvers)))
 				foreach (var resolver in resolvers)
 					if (resolver.CanResolve(type) && resolver.TryResolve(scope, type, out value))
 					{

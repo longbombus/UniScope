@@ -25,7 +25,9 @@ namespace UniScope
 
 	public static class ScopeUtility
 	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void Register<T>(this IScope scope)
+			=> scope.Registry.Register(typeof(T));
+
 		public static void Register<T>(this IScope scope, T instance)
 			where T : class
 			=> scope.Registry.Register<T>(instance);
