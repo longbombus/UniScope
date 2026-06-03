@@ -8,16 +8,15 @@ namespace UniScope
 
 		protected virtual Inheritance RegistrationFlags => Inheritance.Self;
 
-		private void Awake()
+		protected virtual void Awake()
 		{
 			Scope = this.ResolveScope();
 			Scope.Register(this, RegistrationFlags);
-
-			OnAwake();
 		}
 
-		protected virtual void OnAwake()
+		protected virtual void Start()
 		{
+			this.Inject();
 		}
 	}
 }
