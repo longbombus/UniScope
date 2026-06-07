@@ -84,8 +84,8 @@ namespace UniScope
 					var componentType = field.FieldType;
 					var component = inject.Relation switch
 					{
-						Relation.Parent => target.transform.parent?.GetComponent(componentType),
-						Relation.Sibling | Relation.Parent => target.GetComponentInParent(componentType),
+						Relation.Parent => gameObject.transform.parent?.GetComponent(componentType),
+						Relation.Sibling | Relation.Parent => gameObject.GetComponentInParent(componentType),
 						Relation.Sibling => gameObject.GetComponent(componentType),
 						Relation.Sibling | Relation.Child => gameObject.GetComponentInChildren(componentType),
 						Relation.Child => gameObject.GetComponentInChildrenOnly(componentType),
